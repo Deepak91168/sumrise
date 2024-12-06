@@ -18,7 +18,6 @@ const App = () => {
     }
   };
 
-
   const generateSummary = async () => {
     // Use either fileText or manualText, with priority for fileText
     const inputText = fileText || manualText;
