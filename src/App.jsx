@@ -18,21 +18,45 @@ const App = () => {
     }
   };
 
-  // Function to generate summary
-  const generateSummary = () => {
-    const inputText = fileText || manualText; // Prioritize file text over manual text
+
+  const generateSummary = async () => {
+    // Use either fileText or manualText, with priority for fileText
+    const inputText = fileText || manualText;
     if (!inputText) {
       alert("Please provide text via file upload or manual input.");
       return;
     }
-
-    // Placeholder logic for summarization
-    const summarizedText =
-      inputText.length > 100
-        ? `${inputText.slice(0, 100)}... [Summarized]`
-        : inputText;
-    setSummary(summarizedText);
+  
+    console.log("Request Payload:", JSON.stringify({ text: inputText }));
+  
+    try {
+      const res = await fetch("http://127.0.0.1:8000/generate_summary/", {
+        method: "POST",
+        cors: "no-cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: inputText }),
+      });
+  
+      // Check if response is okay
+      if (res.ok) {
+        const data = await res.json();
+        console.log("Response Data:", data);
+        setSummary(data.summary); // Update state with the summary
+      } else {
+        console.error("Failed to fetch summary. Status:", res.status);
+        alert(`Error: ${res.status} ${res.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error);
+      alert("An error occurred while generating the summary. Please try again.");
+    }
   };
+  
+
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10">
@@ -48,7 +72,7 @@ const App = () => {
           </label>
           <input
             type="file"
-            accept=".txt"
+            accept=".json,.txt"
             onChange={handleFileChange}
             className="block w-full text-sm text-blue-600 bg-white 
                        file:py-2 file:px-4 file:mr-4 file:border-0 file:rounded-lg
